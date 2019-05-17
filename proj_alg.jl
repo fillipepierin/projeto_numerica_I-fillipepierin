@@ -274,6 +274,7 @@ function LU_pivo_mark(A; u = 1e-1)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
+    pv = 0
     for k in 1:n # 1:n-1
         cont = 0
         pv = abs(A[k, k])
@@ -283,9 +284,7 @@ function LU_pivo_mark(A; u = 1e-1)
         for i in k+1:n
             for j in k:n-1
                 (nzlin, nzcol) = zeros_mat(A, r, t)
-                nzlin = n - nzlin
-                nzcol = n - nzcol
-                if cont >= ((nzlin - 1) * (nzcol - 1)) # nnz_n <= nnz
+                if cont <= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
                         pv = abs(A[i, j])
                         cont = nzlin * nzcol
@@ -330,5 +329,10 @@ function LU_pivo_mark(A; u = 1e-1)
         end
     end
     
-    return A, p, q
+    if pv == 0
+        println("Matriz singular")
+    else
+        return A, p, q
+    end
+    
 end
