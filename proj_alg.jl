@@ -256,16 +256,15 @@ function sep_LU(A)
     return L, U
 end
 
-# LU com pivoteamento parcial e completo combinado com pivoteamento de Markowitz para aumentar esparsidade.
-"""`LU_pivo_mark(A, b; tpv)
+# LU com pivoteamento completo combinado com pivoteamento de Markowitz para aumentar esparsidade.
+"""`LU_pivo_mark(A)
 
-O algoritmo calcula a fatoração LU usando pivoteamento parcial (tpv = 0) ou completo (total) (tpv = 1), com combinação com o pivoteamento de Markowitz, para quaisquer matrizes n x n.
-Sendo tpv o tipo de pivoteamento, ou seja, tpv = 0 pivoteamento parcial e tpv = 1 pivoteamento completo (total).
+O algoritmo calcula a fatoração LU usando pivoteamento completo (total), para quaisquer matrizes n x n.
+Combinando com o pivoteamento de Markowitz.
 
 """
-function LU_pivo_mark(A; u = 1e-1, tpv = 0)
+function LU_pivo_mark(A; u = 1e-1)
     n = size(A)[1]
-    # u é o parâmetro threshold
     
     ### Cálculo dos fatores:
     p = zeros(n)
@@ -275,35 +274,29 @@ function LU_pivo_mark(A; u = 1e-1, tpv = 0)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
-    for k in 1:n-1
+    for k in 1:n # 1:n-1
+        cont = 0
         pv = abs(A[k, k])
-        r = k
-        t = k
+        r = k # linha
+        t = k # coluna
         
         for i in k+1:n
-            if tpv == 0
-                j = k # for j in k
-                if (abs(A[k, k]) >= u * abs(A[i, j]))
-                    if max(pv, A[i, j]) != pv
-                        pv = A[i, j]
+            for j in k:n-1
+                (nzlin, nzcol) = zeros_mat(A, r, t)
+                nzlin = n - nzlin
+                nzcol = n - nzcol
+                if cont >= ((nzlin - 1) * (nzcol - 1)) # nnz_n <= nnz
+                    if abs(A[i, j]) >= u * abs(A[j, j])
+                        pv = abs(A[i, j])
+                        cont = nzlin * nzcol
                         r = i
-                    end
-                end
-            elseif tpv == 1
-                for j in k:n
-                    if (abs(A[k, k]) >= u * abs(A[i, j]))
-                        if max(pv, A[i, j]) != pv
-                            pv = A[i, j]
-                            r = i
-                            t = j
-                        end
+                        t = j
                     end
                 end
             end
         end
-        
+
         if pv == 0
-            println("Matriz singular")
             break # parar; a matriz A é singular
         end
         
@@ -317,7 +310,7 @@ function LU_pivo_mark(A; u = 1e-1, tpv = 0)
                 A[r, j] = aux
             end
         end
-        if (t != k) && (tpv == 1)
+        if t != k
             aux = q[k]
             q[k] = q[t]
             q[t] = aux
@@ -337,9 +330,5 @@ function LU_pivo_mark(A; u = 1e-1, tpv = 0)
         end
     end
     
-    if tpv == 0
-        return A, p
-    elseif tpv == 1
-        return A, p, q
-    end
+    return A, p, q
 end
