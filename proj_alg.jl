@@ -263,7 +263,7 @@ O algoritmo calcula a fatoração LU usando pivoteamento completo (total), para 
 Combinando com o pivoteamento de Markowitz.
 
 """
-function LU_pivo_mark(A; u = 1e-1)
+function LU_pivo_mark(A; u = 1e-4)
     n = size(A)[1]
     
     ### Cálculo dos fatores:
@@ -276,15 +276,16 @@ function LU_pivo_mark(A; u = 1e-1)
     
     pv = 0
     for k in 1:n # 1:n-1
-        cont = 0
+        cont = n^2
         pv = abs(A[k, k])
         r = k # linha
         t = k # coluna
         
-        for i in k+1:n
-            for j in k:n-1
-                (nzlin, nzcol) = zeros_mat(A, r, t)
-                if cont <= (nzlin * nzcol) # nnz_n <= nnz
+        ### Minimiza o número de elementos não nulo na linha i e coluna j sujeito ao pivoteamento de Markowitz:
+        for i in k:n # k+1:n
+            for j in k:n # nova 1:i-1 # k:n-1
+                (nzlin, nzcol) = zeros_mat(A, i, j)
+                if cont >= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
                         pv = abs(A[i, j])
                         cont = nzlin * nzcol
