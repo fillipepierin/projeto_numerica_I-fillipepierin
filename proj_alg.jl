@@ -304,7 +304,7 @@ function LU_pivo_mark(A; u = 1e-4)
         ### Minimiza o número de elementos não nulo na linha i e coluna j sujeito ao pivoteamento de Markowitz:
         for i in k:n
             for j in k:n
-                (nzlin, nzcol) = zeros_mat(A, i, j)
+                (nzlin, nzcol) = (nnz(sparse(A[i, 1:n])), nnz(sparse(A[1:n, j])))
                 if cont >= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
                         pv = abs(A[i, j])
