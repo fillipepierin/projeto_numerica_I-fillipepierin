@@ -250,10 +250,30 @@ function sep_LU(A)
     n = size(A)[1]
     
     ### Separando a matriz A nas matrizes L e U:
-    L = tril(A, -1) + diagm(ones(n), 0)
+    L = tril(A, -1) + diagm(0 => ones(n))
     U = triu(A)
     
     return L, U
+end
+
+"""`zeros_mat(A)
+
+O algoritmo para contar o número de elementos que não são nulos na linha i e coluna j da matrix A.
+
+"""
+function zeros_mat(A, r, t)
+    nzcol = 0
+    nzlin = 0
+    n = size(A)[1]
+    for i in 1:n
+        if A[i, t] != 0
+            nzcol += 1
+        end
+        if A[r, i] != 0
+            nzlin += 1     
+        end
+    end
+    return (nzlin, nzcol)
 end
 
 # LU com pivoteamento completo combinado com pivoteamento de Markowitz para aumentar esparsidade.
@@ -282,8 +302,8 @@ function LU_pivo_mark(A; u = 1e-4)
         t = k # coluna
         
         ### Minimiza o número de elementos não nulo na linha i e coluna j sujeito ao pivoteamento de Markowitz:
-        for i in k:n # k+1:n
-            for j in k:n # nova 1:i-1 # k:n-1
+        for i in k:n
+            for j in k:n
                 (nzlin, nzcol) = zeros_mat(A, i, j)
                 if cont >= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
