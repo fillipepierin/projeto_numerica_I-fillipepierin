@@ -1,6 +1,6 @@
 # Arquivo com as implementações dos algoritmos usados nas fatorações LU com pivoteamento parcial e completo e com combinação com pivoteamento de Markowitz para aumentar a espasidade.
 
-"""`LU_pivo_parcial(A, b)
+"""`LU_pivo_parcial(A)
 
 O algoritmo calcula a fatoração LU usando pivoteamento parcial, para quaisquer matrizes n x n. 
 
@@ -52,7 +52,7 @@ function LU_pivo_parcial(A)
     return A, p
 end
 
-"""`LU_pivo_completo(A, b)
+"""`LU_pivo_completo(A)
 
 O algoritmo calcula a fatoração LU usando pivoteamento completo (total), para quaisquer matrizes n x n. 
 
@@ -124,7 +124,7 @@ function LU_pivo_completo(A)
 end
 
 # LU com pivoteamenteamento parcial e completo numa única função usando tpv
-"""`LU_pivo(A, b; tpv)
+"""`LU_pivo(A; tpv)
 
 O algoritmo calcula a fatoração LU usando pivoteamento parcial (tpv = 0) ou completo (total) (tpv = 1), para quaisquer matrizes n x n.
 Sendo tpv o tipo de pivoteamento, ou seja, tpv = 0 pivoteamento parcial e tpv = 1 pivoteamento completo (total).
