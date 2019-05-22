@@ -294,7 +294,6 @@ function LU_pivo_mark(A; u = 1e-4)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
-    pv = 0
     for k in 1:n # 1:n-1
         cont = n^2
         pv = abs(A[k, k])
