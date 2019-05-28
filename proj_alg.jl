@@ -141,7 +141,7 @@ function LU_pivo(A; tpv = 0)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
-    # pv = 0
+    pv = 0
     for k in 1:n # 1:n-1
         pv = abs(A[k, k])
         r = k
@@ -158,13 +158,10 @@ function LU_pivo(A; tpv = 0)
                 end
             end
         end
-        ### println("r = i, t = j: ", r, " ", t)
         
-        ### println("pv: ", pv)
         if pv == 0
             break # parar; a matriz A é singular
         end
-        ### println("A: ", A)
         
         if r != k
             aux = p[k]
@@ -190,9 +187,9 @@ function LU_pivo(A; tpv = 0)
         end
     end
     
-    #if pv == 0
-    #    println("Matriz singular")
-    if tpv == 1#elseif tpv == 1
+    if pv == 0
+        print("Matriz é singular")
+    elseif tpv == 1
         return A, p, q
     elseif tpv == 0
         return A, p
@@ -254,6 +251,18 @@ function sep_LU(A)
     return L, U
 end
 
+"""`esp(A)
+
+O algoritmo calcula a porcentagem de esparsidade, isto é, a quantidade de elementos nulos da matriz A.
+
+"""
+function esp(A)
+    (n, m) = size(A)
+    nn = n * m
+    esp = (nn - nnz(sparse(A))) / (nn)
+    return esp
+end
+
 # LU com pivoteamento completo combinado com pivoteamento de Markowitz para aumentar esparsidade.
 """`LU_pivo_mark(A)
 
@@ -276,7 +285,6 @@ function LU_pivo_mark(A; u = 1e-4)
     for k in 1:n # 1:n-1
         cont = n^2
         pv = abs(A[k, k])
-        ## println("pv: ", pv)
         r = k # linha
         t = k # coluna
         
@@ -284,12 +292,9 @@ function LU_pivo_mark(A; u = 1e-4)
         for i in k:n # k+1:n
             for j in k:n # nova 1:i-1 # k:n-1
                 (nzlin, nzcol) = (nnz(sparse(A[i, 1:n])), nnz(sparse(A[1:n, j])))
-                ## println("i, j: ", i, " ", j)
-                ## println("cont >=(nzlin * nzcol): ", cont >=(nzlin * nzcol), " ", nzlin, " ", nzcol)
                 if cont >= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
                         pv = abs(A[i, j])
-                        ## println("pv: ", pv)
                         cont = nzlin * nzcol
                         r = i
                         t = j
@@ -297,7 +302,6 @@ function LU_pivo_mark(A; u = 1e-4)
                 end
             end
         end
-        ## println("cont: ", cont)
 
         if pv == 0
             break # parar; a matriz A é singular
