@@ -123,7 +123,7 @@ function LU_pivo_completo(A)
     return A, p, q
 end
 
-# LU com pivoteamenteamento parcial e completo numa única função usando tpv
+# LU com pivoteamenteamento parcial e completo numa única função
 """`LU_pivo(A; tpv)
 
 O algoritmo calcula a fatoração LU usando pivoteamento parcial (tpv = 0) ou completo (total) (tpv = 1), para quaisquer matrizes n x n.
@@ -141,13 +141,14 @@ function LU_pivo(A; tpv = 0)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
-    for k in 1:n-1
+    # pv = 0
+    for k in 1:n # 1:n-1
         pv = abs(A[k, k])
         r = k
         t = k
-        for i in k+1:n
+        for i in k:n # k+1:n
             for j in k:n
-                if abs(A[i, k]) > pv && (tpv == 0)
+                if abs(A[i, k]) > pv
                     pv = abs(A[i, k])
                     r = i
                 end
@@ -157,49 +158,46 @@ function LU_pivo(A; tpv = 0)
                 end
             end
         end
+        ### println("r = i, t = j: ", r, " ", t)
         
+        ### println("pv: ", pv)
         if pv == 0
-            println("Matriz singular")
             break # parar; a matriz A é singular
         end
+        ### println("A: ", A)
         
         if r != k
             aux = p[k]
             p[k] = p[r]
             p[r] = aux
-            for j in 1:n
-                aux = A[k, j]
-                A[k, j] = A[r, j]
-                A[r, j] = aux
-            end
+            aux = A[k, 1:n]
+            A[k, 1:n] = A[r, 1:n]
+            A[r, 1:n] = aux
         end
-        if (t != k) && (tpv == 1)
+        if t != k
             aux = q[k]
             q[k] = q[t]
             q[t] = aux
-            for j in 1:n
-                aux = A[j, k]
-                A[j, k] = A[j, t]
-                A[j, t] = aux
-            end
+            aux = A[1:n, k]
+            A[1:n, k] = A[1:n, t]
+            A[1:n, t] = aux
         end
         
         for i in k+1:n
-            # println("A[k, k]: ", A[k, k])
             m = A[i, k] / A[k, k]
-            # println("m: ", m)
             A[i, k] = m
-            for j in k+1:n
-                A[i, j] = A[i, j] - m * A[k, j]
-            end
+            A[i, k+1:n] = A[i, k+1:n] - m * A[k, k+1:n]
         end
     end
     
-    if tpv == 1
+    #if pv == 0
+    #    println("Matriz singular")
+    if tpv == 1#elseif tpv == 1
         return A, p, q
-    else
+    elseif tpv == 0
         return A, p
     end
+    
 end
 
 """`LU_resol_sist(A, p, b)
@@ -244,7 +242,7 @@ end
 
 """`sep_LU(A)
 
-O algoritmo a partir A no formato LU, separa a matriz A em duas matrizes L e U.
+O algoritmo a partir A no formato LU, separa a matriz A em duas matrizes L e U, sendo L triangular inferior e U triangular superior.
 """
 function sep_LU(A)
     n = size(A)[1]
@@ -254,26 +252,6 @@ function sep_LU(A)
     U = triu(A)
     
     return L, U
-end
-
-"""`zeros_mat(A)
-
-O algoritmo para contar o número de elementos que não são nulos na linha i e coluna j da matrix A.
-
-"""
-function zeros_mat(A, r, t)
-    nzcol = 0
-    nzlin = 0
-    n = size(A)[1]
-    for i in 1:n
-        if A[i, t] != 0
-            nzcol += 1
-        end
-        if A[r, i] != 0
-            nzlin += 1     
-        end
-    end
-    return (nzlin, nzcol)
 end
 
 # LU com pivoteamento completo combinado com pivoteamento de Markowitz para aumentar esparsidade.
@@ -294,19 +272,24 @@ function LU_pivo_mark(A; u = 1e-4)
         q[i] = i # para guardar os índices das colunas que foram trocadas
     end
     
+    pv = 0
     for k in 1:n # 1:n-1
         cont = n^2
         pv = abs(A[k, k])
+        ## println("pv: ", pv)
         r = k # linha
         t = k # coluna
         
         ### Minimiza o número de elementos não nulo na linha i e coluna j sujeito ao pivoteamento de Markowitz:
-        for i in k:n
-            for j in k:n
+        for i in k:n # k+1:n
+            for j in k:n # nova 1:i-1 # k:n-1
                 (nzlin, nzcol) = (nnz(sparse(A[i, 1:n])), nnz(sparse(A[1:n, j])))
+                ## println("i, j: ", i, " ", j)
+                ## println("cont >=(nzlin * nzcol): ", cont >=(nzlin * nzcol), " ", nzlin, " ", nzcol)
                 if cont >= (nzlin * nzcol) # nnz_n <= nnz
                     if abs(A[i, j]) >= u * abs(A[j, j])
                         pv = abs(A[i, j])
+                        ## println("pv: ", pv)
                         cont = nzlin * nzcol
                         r = i
                         t = j
@@ -314,6 +297,7 @@ function LU_pivo_mark(A; u = 1e-4)
                 end
             end
         end
+        ## println("cont: ", cont)
 
         if pv == 0
             break # parar; a matriz A é singular
@@ -323,29 +307,23 @@ function LU_pivo_mark(A; u = 1e-4)
             aux = p[k]
             p[k] = p[r]
             p[r] = aux
-            for j in 1:n
-                aux = A[k, j]
-                A[k, j] = A[r, j]
-                A[r, j] = aux
-            end
+            aux = A[k, 1:n]
+            A[k, 1:n] = A[r, 1:n]
+            A[r, 1:n] = aux
         end
         if t != k
             aux = q[k]
             q[k] = q[t]
             q[t] = aux
-            for j in 1:n
-                aux = A[j, k]
-                A[j, k] = A[j, t]
-                A[j, t] = aux
-            end
+            aux = A[1:n, k]
+            A[1:n, k] = A[1:n, t]
+            A[1:n, t] = aux
         end
         
         for i in k+1:n
             m = A[i, k] / A[k, k]
             A[i, k] = m
-            for j in k+1:n
-                A[i, j] = A[i, j] - m * A[k, j]
-            end
+            A[i, k+1:n] = A[i, k+1:n] - m * A[k, k+1:n]
         end
     end
     
