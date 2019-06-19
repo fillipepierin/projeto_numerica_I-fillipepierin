@@ -7,6 +7,7 @@ using LinearAlgebra
 using SparseArrays
 
 function main()
+    inlude("proj_alg.jl")
     A = [2.0 0.0 2.0 0.0 0.0; 3.0 1.0 4.0 0.0 0.0; 0.0 0.0 -3.0 2.0 0.0; 0.0 0.0 0.0 1.0 0.0; 0.0 4.0 2.0 2.0 1.0]
     println("Matriz A: ")
     println(A)
